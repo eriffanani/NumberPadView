@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="NumberPadView">
+        <attr name="padSize" format="dimension"/>
+        <attr name="android:spacing"/>
+        <attr name="android:textColor"/>
+        <attr name="backspaceColor" format="reference|color"/>
+        <attr name="leftPaneColor" format="reference|color"/>
+        <attr name="leftPaneInput" format="integer">
+            <flag name="none" value="0"/>
+            <flag name="comma" value="1"/>
+            <flag name="dots" value="2"/>
+            <flag name="icon" value="3"/>
+        </attr>
+        <attr name="padType" format="integer">
+            <flag name="none" value="0"/>
+            <flag name="border" value="1"/>
+            <flag name="solid" value="2"/>
+            <flag name="card" value="3"/>
+        </attr>
+        <attr name="padTypeBackspace" format="integer">
+            <flag name="none" value="0"/>
+            <flag name="border" value="1"/>
+            <flag name="solid" value="2"/>
+        </attr>
+        <attr name="padTypeLeftPane" format="integer">
+            <flag name="none" value="0"/>
+            <flag name="border" value="1"/>
+            <flag name="solid" value="2"/>
+        </attr>
+        <attr name="padTypeCardElevation" format="dimension"/>
+    </declare-styleable>
+
+</resources>
