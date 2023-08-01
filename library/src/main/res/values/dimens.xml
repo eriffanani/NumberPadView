@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="pad_default_size">90dp</dimen>
-    <dimen name="pad_default_card_elevation">3dp</dimen>
+    <dimen name="pad_default_icon_size">30dp</dimen>
+    <dimen name="pad_default_card_elevation">2dp</dimen>
+    <dimen name="pad_default_stroke_width">2.2dp</dimen>
 </resources>

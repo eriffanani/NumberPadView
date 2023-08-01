@@ -1,36 +1,32 @@
 package com.erif.numberpadview
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
-import com.erif.library.NumberPadListener
-import com.erif.library.NumberPadView
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
+        val btn: Button = findViewById(R.id.btnExample)
 
-        val numberPad: NumberPadView = findViewById(R.id.act_main_numberPadView)
-        numberPad.addListener(object : NumberPadListener{
-            override fun onClickNumber(number: String) {
-                toast(number)
-            }
+        val frg = FrgPasswordInput()
 
-            override fun onClickLeftPane() {
-                toast("Left Pane")
-            }
-
-            override fun onClickBackSpace() {
-                toast("Backspace")
-            }
-
-        })
-
-    }
-
-    private fun toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        btn.setOnClickListener {
+            val transaction = supportFragmentManager.beginTransaction()
+            transaction.setCustomAnimations(
+                R.anim.password_show,
+                R.anim.password_exit,
+                R.anim.password_show,
+                R.anim.password_exit
+            )
+            transaction.replace(R.id.act_main_passwordContainer, frg)
+            transaction.addToBackStack(null)
+            transaction.commit()
+        }
     }
 
 }

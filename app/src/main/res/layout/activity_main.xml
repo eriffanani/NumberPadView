@@ -7,16 +7,16 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.erif.library.NumberPadView
-        android:id="@+id/act_main_numberPadView"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/btnExample"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:spacing="30dp"
-        app:padSize="80dp"
-        app:leftPaneInput="icon"
-        app:padType="card"
-        app:leftPaneColor="@android:color/holo_red_dark"
-        app:padTypeLeftPane="border"/>
+        android:text="Example"
+        android:layout_centerInParent="true"/>
+
+    <FrameLayout
+        android:id="@+id/act_main_passwordContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

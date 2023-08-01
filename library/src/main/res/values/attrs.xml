@@ -2,11 +2,22 @@
 <resources>
 
     <declare-styleable name="NumberPadView">
+        <attr name="android:textSize"/>
+        <attr name="boldText" format="boolean"/>
         <attr name="padSize" format="dimension"/>
         <attr name="android:spacing"/>
         <attr name="android:textColor"/>
-        <attr name="backspaceColor" format="reference|color"/>
-        <attr name="leftPaneColor" format="reference|color"/>
+        <attr name="padBackgroundColor" format="reference|color"/>
+        <attr name="leftPaneBackgroundColor" format="reference|color"/>
+        <attr name="backspaceBackgroundColor" format="reference|color"/>
+        <attr name="strokeWidth"/>
+        <attr name="fontFamily"/>
+        <attr name="backspaceIcon" format="reference"/>
+        <attr name="backspaceIconSize" format="dimension"/>
+        <attr name="backspaceIconColor" format="reference|color"/>
+        <attr name="leftPaneIcon" format="reference"/>
+        <attr name="leftPaneIconSize" format="dimension"/>
+        <attr name="leftPaneIconColor" format="reference|color"/>
         <attr name="leftPaneInput" format="integer">
             <flag name="none" value="0"/>
             <flag name="comma" value="1"/>
@@ -23,13 +34,24 @@
             <flag name="none" value="0"/>
             <flag name="border" value="1"/>
             <flag name="solid" value="2"/>
+            <flag name="card" value="3"/>
         </attr>
         <attr name="padTypeLeftPane" format="integer">
             <flag name="none" value="0"/>
             <flag name="border" value="1"/>
             <flag name="solid" value="2"/>
+            <flag name="card" value="3"/>
         </attr>
         <attr name="padTypeCardElevation" format="dimension"/>
+        <attr name="animateOnShow" format="integer">
+            <flag name="none" value="0"/>
+            <flag name="scaleIn" value="1"/>
+            <flag name="scaleOut" value="2"/>
+            <flag name="slideUp" value="3"/>
+            <flag name="slideDown" value="4"/>
+            <flag name="slideLeft" value="5"/>
+            <flag name="slideRight" value="6"/>
+        </attr>
     </declare-styleable>
 
 </resources>

@@ -2,10 +2,14 @@ package com.erif.library;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -16,23 +20,36 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.widget.ImageViewCompat;
-import androidx.dynamicanimation.animation.SpringAnimation;
-
-import com.google.android.material.card.MaterialCardView;
 
 public class NumberPadView extends FrameLayout {
 
     private NumberPadListener listener;
 
-    private final int textSize = 100;
+    private float textSize = 100f;
     private float spacing = 0f;
     private int textColor = Color.BLACK;
-    private int leftPaneColor = Color.BLACK;
-    private int backspaceColor = Color.BLACK;
+    private int leftPaneIconColor = Color.BLACK;
+    private int backspaceIconColor = Color.BLACK;
     private float padSize = 0f;
 
     private float padTypeCardElevation = 0f;
+
+    private int padBackgroundColor = Color.WHITE;
+    private int leftPaneBackgroundColor = Color.WHITE;
+    private int backspaceBackgroundColor = Color.WHITE;
+
+    private boolean boldText = false;
+
+    private float strokeWidth = 0f;
+
+    private int fontResource = 0;
+
+    private int leftPaneIcon = 0;
+    private float leftPaneIconSize = 0f;
+    private int backSpaceIcon = 0;
+    private float backSpaceIconSize = 0f;
 
     public static final int LEFT_PANE_NONE = 0;
     public static final int LEFT_PANE_COMMA = 1;
@@ -49,6 +66,20 @@ public class NumberPadView extends FrameLayout {
     private int padTypeBackspace = PAD_TYPE_NONE;
 
     private GridLayout gridLayout;
+
+    private static final int NUMBER_PAD = 0;
+    private static final int LEFT_PAD = 1;
+    private static final int BACKSPACE_PAD = 2;
+
+    private static final int ANIMATION_NONE = 0;
+    private static final int ANIMATION_SCALE_IN = 1;
+    private static final int ANIMATION_SCALE_OUT = 2;
+    private static final int ANIMATION_SLIDE_UP = 3;
+    private static final int ANIMATION_SLIDE_DOWN = 4;
+    private static final int ANIMATION_SLIDE_LEFT = 5;
+    private static final int ANIMATION_SLIDE_RIGHT = 6;
+
+    private int animation = ANIMATION_NONE;
 
     public NumberPadView(Context context) {
         super(context);
@@ -71,6 +102,7 @@ public class NumberPadView extends FrameLayout {
     }
 
     public void init(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        setClipToPadding(false);
         gridLayout = new GridLayout(context);
         gridLayout.setId(View.generateViewId());
         gridLayout.setColumnCount(3);
@@ -82,65 +114,76 @@ public class NumberPadView extends FrameLayout {
         gridLayout.setLayoutParams(paramGrid);
         if (attrs != null) {
             TypedArray typedArray = context.getTheme().obtainStyledAttributes(
-                    attrs, R.styleable.NumberPadView, defStyleAttr, 0
+                    attrs, R.styleable.NumberPadView, defStyleAttr, defStyleRes
             );
             try {
                 float padDefaultSize = dimen(R.dimen.pad_default_size);
+                textSize = typedArray.getDimension(R.styleable.NumberPadView_android_textSize, 100f);
+                boldText = typedArray.getBoolean(R.styleable.NumberPadView_boldText, false);
                 padSize = typedArray.getDimension(R.styleable.NumberPadView_padSize, padDefaultSize);
                 spacing = typedArray.getDimension(R.styleable.NumberPadView_android_spacing, 0f);
                 textColor = typedArray.getColor(R.styleable.NumberPadView_android_textColor, Color.BLACK);
-                leftPaneColor = typedArray.getColor(R.styleable.NumberPadView_leftPaneColor, Color.BLACK);
-                backspaceColor = typedArray.getColor(R.styleable.NumberPadView_backspaceColor, Color.BLACK);
+                leftPaneIconColor = typedArray.getColor(R.styleable.NumberPadView_leftPaneIconColor, Color.BLACK);
+                backspaceIconColor = typedArray.getColor(R.styleable.NumberPadView_backspaceIconColor, Color.BLACK);
                 leftPaneInput = typedArray.getInteger(R.styleable.NumberPadView_leftPaneInput, LEFT_PANE_NONE);
                 padType = typedArray.getInteger(R.styleable.NumberPadView_padType, PAD_TYPE_NONE);
                 padTypeLeftPane = typedArray.getInteger(R.styleable.NumberPadView_padTypeLeftPane, PAD_TYPE_NONE);
                 padTypeBackspace = typedArray.getInteger(R.styleable.NumberPadView_padTypeBackspace, PAD_TYPE_NONE);
                 float padCardDefaultElevation = dimen(R.dimen.pad_default_card_elevation);
                 padTypeCardElevation = typedArray.getDimension(R.styleable.NumberPadView_padTypeCardElevation, padCardDefaultElevation);
-            } finally {
+                padBackgroundColor = typedArray.getColor(R.styleable.NumberPadView_padBackgroundColor, Color.WHITE);
+                leftPaneBackgroundColor = typedArray.getColor(R.styleable.NumberPadView_leftPaneBackgroundColor, Color.WHITE);
+                backspaceBackgroundColor = typedArray.getColor(R.styleable.NumberPadView_backspaceBackgroundColor, Color.WHITE);
+                fontResource = typedArray.getResourceId(R.styleable.NumberPadView_fontFamily, 0);
+                float defaultStrokeWidth = dimen(R.dimen.pad_default_stroke_width);
+                strokeWidth = typedArray.getDimension(R.styleable.NumberPadView_strokeWidth, defaultStrokeWidth);
+                float defaultIconSize = dimen(R.dimen.pad_default_icon_size);
+                leftPaneIcon = typedArray.getResourceId(R.styleable.NumberPadView_leftPaneIcon, 0);
+                leftPaneIconSize = typedArray.getDimension(R.styleable.NumberPadView_leftPaneIconSize, defaultIconSize);
+                backSpaceIcon = typedArray.getResourceId(R.styleable.NumberPadView_backspaceIcon, 0);
+                backSpaceIconSize = typedArray.getDimension(R.styleable.NumberPadView_backspaceIconSize, defaultIconSize);
+                animation = typedArray.getInteger(R.styleable.NumberPadView_animateOnShow, ANIMATION_NONE);
+            } catch (Exception e){
+                typedArray.close();
+            }finally {
                 typedArray.recycle();
             }
         }
-        gridLayout.addView(createNumber("1", 0));
-        gridLayout.addView(createNumber("2", 25));
-        gridLayout.addView(createNumber("3", 50));
-        gridLayout.addView(createNumber("4", 75));
-        gridLayout.addView(createNumber("5", 100));
-        gridLayout.addView(createNumber("6", 125));
-        gridLayout.addView(createNumber("7", 150));
-        gridLayout.addView(createNumber("8", 175));
-        gridLayout.addView(createNumber("9", 200));
-        int delayLeftPane = 225;
+        gridLayout.addView(createNumber("1", isSlideRight() ? 50 : isSlideDown() ? 225 : 0));
+        gridLayout.addView(createNumber("2", isSlideDown() ? 250 : 25));
+        gridLayout.addView(createNumber("3", isSlideRight() ? 0 : isSlideDown() ? 275 : 50));
+        gridLayout.addView(createNumber("4", isSlideRight() ? 125 : isSlideDown() ? 150 : 75));
+        gridLayout.addView(createNumber("5", isSlideDown() ? 175 : 100));
+        gridLayout.addView(createNumber("6", isSlideRight() ? 75 : isSlideDown() ? 200 : 125));
+        gridLayout.addView(createNumber("7", isSlideRight() ? 200 : isSlideDown() ? 75 : 150));
+        gridLayout.addView(createNumber("8", isSlideDown() ? 100 : 175));
+        gridLayout.addView(createNumber("9", isSlideRight() ? 175 : isSlideDown() ? 125: 200));
+        int delayLeftPane = isSlideRight() ? 275 : isSlideDown() ? 0 : 225;
         if (leftPaneInput == LEFT_PANE_ICON) {
-            int iconLeft = R.drawable.number_pad_ic_fingerprint;
+            Drawable icon = getIcon(leftPaneIcon, R.drawable.number_pad_ic_fingerprint);
             View leftPane = createImage(
-                    iconLeft, leftPaneColor, delayLeftPane, false
+                    icon, leftPaneIconColor, delayLeftPane, false
             );
             gridLayout.addView(leftPane);
         } else if (leftPaneInput == LEFT_PANE_COMMA) {
             gridLayout.addView(createNumber(",", delayLeftPane));
         } else if (leftPaneInput == LEFT_PANE_DOTS) {
-            gridLayout.addView(createNumber(".", delayLeftPane, true));
+            gridLayout.addView(createNumber(".", delayLeftPane));
         } else {
             gridLayout.addView(emptyView());
         }
-        gridLayout.addView(createNumber("0", 250));
-        int iconBackSpace = R.drawable.number_pad_ic_backspace;
+        gridLayout.addView(createNumber("0", isSlideDown() ? 25 : 250));
+        Drawable iconBackSpace = getIcon(backSpaceIcon, R.drawable.number_pad_ic_backspace);
         View backSpace = createImage(
-                iconBackSpace, backspaceColor, 275, true
+                iconBackSpace, backspaceIconColor, isSlideRight() ? 225 : isSlideDown() ? 50 : 275, true
         );
         gridLayout.addView(backSpace);
+        //gridLayout.addView(emptyView());
         addView(gridLayout);
     }
 
     private View createNumber(String number, int delay) {
-        return createNumber(number, delay, false);
-    }
-
-    private View createNumber(String number, int delay, boolean isLeftPane) {
-        FrameLayout parent = createParent();
-        if (isLeftPane)
-            parent.setBackground(background(padTypeLeftPane));
+        CardView parent = createParent();
         parent.setOnClickListener(v -> {
             if (listener != null)
                 listener.onClickNumber(number);
@@ -155,13 +198,8 @@ public class NumberPadView extends FrameLayout {
         return parent;
     }
 
-    private View createImage(int imageId, int color, int delay, boolean isBackspace) {
-        FrameLayout parent = createParent();
-        if (isBackspace) {
-            parent.setBackground(background(padTypeBackspace));
-        } else {
-            parent.setBackground(background(padTypeLeftPane));
-        }
+    private View createImage(Drawable icon, int color, int delay, boolean isBackspace) {
+        CardView parent = createParent(isBackspace ? BACKSPACE_PAD : LEFT_PAD);
         parent.setOnClickListener(v -> {
             if (listener != null) {
                 if (isBackspace) {
@@ -173,13 +211,14 @@ public class NumberPadView extends FrameLayout {
         });
 
         // Icon
-        ImageView imageView = createImage(imageId, color);
+        ImageView imageView = createImage(icon, color, isBackspace);
         parent.addView(imageView);
 
         animateView(parent, delay);
 
         if (isBackspace) {
-            if (isCardPad() && padTypeCardElevation > 0) {
+            boolean isCardPad = isCardPad(padType) || isCardPad(padTypeLeftPane) || isCardPad(padTypeBackspace);
+            if (isCardPad && padTypeCardElevation > 0) {
                 int paddingStart = (int) padTypeCardElevation;
                 int paddingTop = (int) (padTypeCardElevation / 1.5f);
                 int paddingEnd = (int) padTypeCardElevation;
@@ -198,50 +237,66 @@ public class NumberPadView extends FrameLayout {
         this.listener = listener;
     }
 
-    private Drawable drawable(int id) {
-        return ContextCompat.getDrawable(getContext(), id);
+    private CardView createParent() {
+        return createParent(NUMBER_PAD);
     }
 
-    private Drawable background(int type) {
-        Drawable drawable;
-        if (type == PAD_TYPE_BORDER) {
-            drawable = drawable(R.drawable.number_pad_ripple_border);
-        } else if (type == PAD_TYPE_SOLID) {
-            drawable = drawable(R.drawable.number_pad_ripple_solid);
+    private CardView createParent(int pad) {
+        CardView card;
+        if (pad == LEFT_PAD) {
+            card = createCard(pad, padTypeLeftPane);
+        } else if (pad == BACKSPACE_PAD) {
+            card = createCard(pad, padTypeBackspace);
         } else {
-            drawable = drawable(R.drawable.number_pad_ripple);
+            card = createCard(pad, padType);
         }
-        return drawable;
+        return card;
     }
 
-    private FrameLayout createParent() {
+    private GridLayout.LayoutParams paramCard() {
         int size = (int) padSize;
         GridLayout.LayoutParams param = new GridLayout.LayoutParams();
         param.width = size;
         param.height = size;
-        FrameLayout parent = new FrameLayout(getContext());
-        parent.setId(View.generateViewId());
-        parent.setBackground(background(padType));
-        CardView cardView = null;
-        if (isCardPad()) {
-            cardView = new CardView(getContext());
-            cardView.setId(View.generateViewId());
-            cardView.setCardElevation(padTypeCardElevation);
-            cardView.setRadius(size / 2f);
-        }
         int gridItemCount = gridLayout.getChildCount();
         int index = gridItemCount + 1;
         if (index % 3 != 0)
             param.rightMargin = (int) spacing;
         if (index > 3)
             param.topMargin = (int) spacing;
-        if (isCardPad()) {
-            if (cardView != null)
-                cardView.setLayoutParams(param);
-        } else {
-            parent.setLayoutParams(param);
+        return param;
+    }
+
+    private CardView createCard(int pad, int type) {
+        // Card Shape
+        int size = (int) padSize;
+        CardView cardView = new CardView(getContext());
+        cardView.setId(View.generateViewId());
+        cardView.setCardElevation(isCardPad(type) ? padTypeCardElevation : 0f);
+        cardView.setRadius(size / 2f);
+        // Card Color
+        int transparent = ContextCompat.getColor(getContext(), android.R.color.transparent);
+        int cardBackground = isCardOrSolid(type) ? bgColor(pad) : transparent;
+        cardView.setCardBackgroundColor(cardBackground);
+        // Ripple
+        TypedValue outValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        Drawable ripple = drawable(outValue.resourceId);
+        cardView.setForeground(ripple);
+        // If Bordered
+        boolean isBordered = type == PAD_TYPE_BORDER;
+        if (isBordered) {
+            View borderView = new View(getContext());
+            int borderSize = (int) padSize;
+            LayoutParams paramBorder = new LayoutParams(borderSize, borderSize);
+            borderView.setLayoutParams(paramBorder);
+            GradientDrawable borderDrawable = (GradientDrawable) drawable(R.drawable.number_pad_border).mutate();
+            borderDrawable.setStroke((int) strokeWidth, bgColor(pad));
+            borderView.setBackground(borderDrawable);
+            cardView.addView(borderView);
         }
-        return isCardPad() ? cardView : parent;
+        cardView.setLayoutParams(paramCard());
+        return cardView;
     }
 
     private TextView createText(String number) {
@@ -250,26 +305,31 @@ public class NumberPadView extends FrameLayout {
         LayoutParams paramText = new LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
         );
+        boolean isDivider = number.equals(".") || number.equals(",");
+        if (isDivider)
+            paramText.bottomMargin = (int) (padSize / 7f);
         paramText.gravity = Gravity.CENTER;
         textView.setIncludeFontPadding(false);
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        float size = isDivider ? (textSize * 1.5f) : textSize;
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, size);
+        Typeface typeface = fontResource != 0 ? getFont(fontResource) : Typeface.DEFAULT;
+        textView.setTypeface(typeface, boldText ? Typeface.BOLD : Typeface.NORMAL);
         textView.setLayoutParams(paramText);
         textView.setTextColor(textColor);
         textView.setText(number);
         return textView;
     }
 
-    private ImageView createImage(int imageId, int color) {
+    private ImageView createImage(Drawable icon, int color, boolean isBackspace) {
         ImageView imageView = new ImageView(getContext());
         imageView.setId(View.generateViewId());
-        float iconSize =  0.8f * textSize;
-        int finalIconSize = (int) iconSize;
-        FrameLayout.LayoutParams paramImage = new FrameLayout.LayoutParams(
+        int finalIconSize = isBackspace ? (int) backSpaceIconSize : (int) leftPaneIconSize;
+        LayoutParams paramImage = new LayoutParams(
                 finalIconSize, finalIconSize
         );
         paramImage.gravity = Gravity.CENTER;
         imageView.setLayoutParams(paramImage);
-        imageView.setImageResource(imageId);
+        imageView.setImageDrawable(icon);
         ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(color));
         return imageView;
     }
@@ -284,40 +344,135 @@ public class NumberPadView extends FrameLayout {
         return view;
     }
 
-    private boolean isCardPad() {
-        return padType == PAD_TYPE_CARD;
+    private boolean isCardPad(int type) {
+        return type == PAD_TYPE_CARD;
+    }
+
+    private boolean isCardOrSolid(int type) {
+        return type == PAD_TYPE_CARD || type == PAD_TYPE_SOLID;
+    }
+
+    private int bgColor(int pad) {
+        if (pad == LEFT_PAD) {
+            return leftPaneBackgroundColor;
+        } else if (pad == BACKSPACE_PAD) {
+            return backspaceBackgroundColor;
+        } else {
+            return padBackgroundColor;
+        }
     }
 
     private void animateView(View view, int delay) {
-        /*view.setAlpha(0.1f);
-        view.setTranslationY(50f);
+        if (animation != ANIMATION_NONE) {
+            if (isAnimationSlideVertical()) {
+                animSlideVertical(view, delay, animation == ANIMATION_SLIDE_UP);
+            } else if (isAnimationSlideHorizontal()) {
+                animSlideHorizontal(view, delay, animation == ANIMATION_SLIDE_LEFT);
+            } else if (isAnimationScale()) {
+                animScale(view, delay, animation == ANIMATION_SCALE_IN);
+            }
+        }
+    }
 
-        view.post(() -> view.animate()
-                .translationY(0f)
-                .alpha(1f)
-                .setDuration(250L)
-                .setStartDelay(delay)
-                .start()
-        );*/
+    private boolean isAnimationSlideVertical() {
+        return animation == ANIMATION_SLIDE_UP || animation == ANIMATION_SLIDE_DOWN;
+    }
 
-        /*view.setAlpha(0f);
-        view.setScaleX(0.7f);
-        view.setScaleY(0.7f);
-
+    private void animSlideVertical(View view, int delay, boolean up) {
+        view.setAlpha(0.1f);
+        view.setTranslationY(up ? 150f : -100f);
         view.post(() -> {
             view.animate()
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .alpha(1f)
+                    .translationY(0f)
                     .setDuration(300L)
                     .setStartDelay(delay)
                     .start();
-        });*/
+            view.animate()
+                    .alpha(1f)
+                    .setDuration(300L)
+                    .setStartDelay(delay+200)
+                    .start();
+        });
+    }
 
+    private boolean isAnimationSlideHorizontal() {
+        return animation == ANIMATION_SLIDE_LEFT || animation == ANIMATION_SLIDE_RIGHT;
+    }
+
+    private void animSlideHorizontal(View view, int delay, boolean left) {
+        view.setAlpha(0.1f);
+        view.setTranslationX(left ? 150f : -150f);
+        view.post(() -> {
+            view.animate()
+                    .translationX(0f)
+                    .setDuration(300L)
+                    .setStartDelay(delay)
+                    .start();
+            view.animate()
+                    .alpha(1f)
+                    .setDuration(300L)
+                    .setStartDelay(delay+50)
+                    .start();
+        });
+    }
+
+    private boolean isAnimationScale() {
+        return animation == ANIMATION_SCALE_IN || animation == ANIMATION_SCALE_OUT;
+    }
+
+    private void animScale(View view, int delay, boolean in) {
+        view.setAlpha(0.1f);
+        view.setScaleX(in ? 1.2f : 0.5f);
+        view.setScaleY(in ? 1.2f : 0.5f);
+
+        view.post(() -> view.animate()
+                .scaleX(1f)
+                .scaleY(1f)
+                .alpha(1f)
+                .setDuration(in ? 300L : 200L)
+                .setStartDelay(delay)
+                .start());
+    }
+
+    private boolean isSlideRight() {
+        return animation == ANIMATION_SLIDE_RIGHT;
+    }
+
+    private boolean isSlideDown() {
+        return animation == ANIMATION_SLIDE_DOWN;
     }
 
     private float dimen(int id) {
         return getContext().getResources().getDimension(id);
+    }
+
+    private Drawable drawable(int id) {
+        return ContextCompat.getDrawable(getContext(), id);
+    }
+
+    private Typeface getFont(int fontRes) {
+        Typeface typeface = null;
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
+                typeface = getContext().getResources().getFont(fontRes);
+            else
+                typeface = ResourcesCompat.getFont(getContext(), fontRes);
+        } catch (Resources.NotFoundException e) {
+            Log.d("NumberPadView", "Font resource not found");
+        }
+        return typeface;
+    }
+
+    private Drawable getIcon(int id, int defaultId) {
+        Drawable icon = null;
+        try {
+            icon = ContextCompat.getDrawable(getContext(), id);
+        } catch (Resources.NotFoundException e) {
+            Log.d("NumberPadView", "Icon resource not found");
+        }
+        if (icon == null)
+            icon = ContextCompat.getDrawable(getContext(), defaultId);
+        return icon;
     }
 
 }
