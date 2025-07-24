@@ -1,4 +1,4 @@
-package com.erif.library;
+package com.erif.numberpad;
 
 import android.content.Context;
 import android.content.res.ColorStateList;

@@ -1,10 +1,8 @@
-package com.erif.numberpadview
+package com.erif.numberpaddemo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import com.erif.library.NumberPadListener
-import com.erif.library.NumberPadView
 
 class DetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

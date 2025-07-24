@@ -1,4 +1,4 @@
-package com.erif.library;
+package com.erif.numberpad;
 
 import org.junit.Test;
 

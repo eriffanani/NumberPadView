@@ -1,4 +1,4 @@
-package com.erif.numberpadview
+package com.erif.numberpaddemo
 
 import org.junit.Test
 
